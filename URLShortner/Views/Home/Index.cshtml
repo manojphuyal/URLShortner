@@ -1,33 +1,81 @@
 ﻿@{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "Shorten";
 }
-
-<main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
-
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
-            </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
+<div class="row justify-content-center align-items-center" style="height: 60vh;">
+    <div class="col-md-4 shadow-box">
+        @using (Html.BeginForm("Shorten", "Home", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            <div style="display: flex; align-items: center;">
+                <div class="flex-grow-1 pr-2">
+                    <div class="form-group">
+                        <div id="formurl">
+                            <input type="text" id="url" name="url" class="form-control" placeholder="Enter Long URL here" />
+                            <div id="formbutton">
+                                <a href="#" id="shortenButton">Shorten URL</a>
+                            </div>
+                        </div>
+                        <div id="shortenedURL" class="mt-3 d-none">
+                            <label for="copyURL">Shortened URL:</label>
+                            <div class="input-group">
+                                <input type="text" id="copyURL" class="form-control" readonly>
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-secondary" id="copyButton">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                </div>
+            </div>
+        }
     </div>
-</main>
+</div>
+
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function () {
+            $("#shortenButton").click(function (event) {
+                event.preventDefault();
+                var urlValue = $("#url").val();
+                if (urlValue.trim() != "") {
+                    $.ajax({
+                        url: "/Home/Shorten",
+                        type: 'POST',
+                        data: $("form").serialize(),
+                        success: function (result) {
+                            if (result.Result == true) {
+                                $("#copyURL").val(result.Message);
+                                $("#shortenedURL").removeClass("d-none");
+                            } else {
+                                toastr.error(result.Message);
+                                $("#url").focus();
+                                $("#url").val("");
+                            }
+                        },
+                        error: function () {
+                            toastr.error("An error occurred. Please try again.");
+                        }
+                    });
+                } else {
+                    toastr.warning("Please enter value");
+                    $("#url").focus();
+                }
+
+            });
+
+            $("#copyButton").click(function () {
+                var copyText = document.getElementById("copyURL");
+                copyText.select();
+                document.execCommand("copy");
+                toastr.success("URL copied to clipboard!");
+            });
+        });
+    </script>
+}

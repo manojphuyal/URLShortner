@@ -13,6 +13,14 @@ namespace URLShortner
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+            // Specific route for Go action with shortKey
+            routes.MapRoute(
+                name: "ShortUrlGo",
+                url: "{shortKey}",
+                defaults: new { controller = "Home", action = "Go" }
+            );
+
+            // Default route for other actions (e.g., Index)
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
